@@ -22,7 +22,4 @@ Run the webserver by running
 ```bash
 $ uv run app.py
 ```
-
-
-```
 ```
