@@ -1,3 +1,9 @@
 config.yml
 tmp
 .aider*
+
+.python-version
+__pycache__/*
+.venv/*
+.env 
+
