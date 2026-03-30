@@ -47,7 +47,7 @@
                         <h5 class="mb-3">Select your answer:</h5>
                         <div class="list-group">
                             {% for answer in question.shuffled_answers %}
-                            <label class="list-group-item answer-option {% if loop.index0 == question.correct_index %}correct-answer{% endif %}">
+                            <label class="list-group-item answer-option">
                                 <div class="d-flex align-items-center">
                                     <input class="form-check-input me-3" type="radio" 
                                            name="answer_index" 

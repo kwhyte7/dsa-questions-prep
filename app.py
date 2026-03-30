@@ -21,18 +21,11 @@ def load_question_data():
         return json.load(f)
 
 question_data = load_question_data()
-"""
-# Organize questions by topic for easier access
-questions_by_topic = defaultdict(list)
-for q in question_data:
-    # Each question is a dictionary, we assume it has a "topic" key
-    if "topic" in q:
-        questions_by_topic[q["topic"]].append(q)
-"""
+# Get the list of unique topics
 questions_by_topic = {
     k:v for k,v in question_data
 }
-# Get the list of unique topics
+
 topics_data = sorted(questions_by_topic.keys())
 
 @app.get("/")
@@ -85,7 +78,8 @@ def start_quiz(request: Request, topic: str = Form(...), num_questions: int = Fo
         "current_question": 0,
         "score": 0,
         "user_answers": [],
-        "total_questions": len(selected_questions)
+        "total_questions": len(selected_questions),
+        "num_questions": num_questions
     }
     
     response = RedirectResponse(f"/question/{session_id}", status_code=303)
@@ -109,11 +103,13 @@ def show_question(request: Request, session_id: str):
         request,
         "question.html",
         {
+            "request": request,
             "question": question,
             "session_id": session_id,
             "current_q": current_q + 1,
             "total_questions": session["total_questions"],
-            "score": session["score"]
+            "score": session["score"],
+            "scores": user_scores
         }
     )
 
@@ -188,9 +184,12 @@ def show_results(request: Request, session_id: str):
         request,
         "question_answer.html",
         {
+            "request": request,
             "session": session,
             "detailed_results": detailed_results,
-            "percentage": (session["score"] / session["total_questions"] * 100) if session["total_questions"] > 0 else 0
+            "percentage": (session["score"] / session["total_questions"] * 100) if session["total_questions"] > 0 else 0,
+            "scores": user_scores,
+            "num_questions": session.get("num_questions", 10)
         }
     )
 
