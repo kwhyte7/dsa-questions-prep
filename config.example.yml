@@ -1,0 +1,6 @@
+model:
+  model: ollama:qwen3.5:9b
+  temperature: 0.5 
+
+generate_questions_for_topic:
+  save_intermittently: true

@@ -1,6 +1,0 @@
-from pydantic import BaseModel, Field
-from typing import List
-
-class QuestionAnswers(BaseModel):
-    question_name: str = Field(description="Name of the question")
-    question_answers: List[str] = Field(description="List of answer options for the question")

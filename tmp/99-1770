@@ -1,4 +1,0 @@
-    if "structured_response" in response.keys():
-        # return as dictionary, QuestionsAnswers schema... (it should be json serialisable)
-        as_json = response["structured_response"]
-        return as_json
