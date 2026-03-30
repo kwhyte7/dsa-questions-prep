@@ -55,7 +55,7 @@ async def async_generate_all_topics(agent, topics:list):
     # Create tasks for all topics
     tasks = []
     for topic in topics:
-        task = asyncio.create_task(generate_questions_for_topic(agent, topic))
+        task = asyncio.create_task(async_generate_questions_for_topic(agent, topic))
         tasks.append(task)
     
     # Wait for all tasks to complete
@@ -75,16 +75,17 @@ async def async_generate_all_topics(agent, topics:list):
     return completed_dataset
 
 def generate_questions_for_topic(agent, topic_list:list):
-    topic, question_names = topic
+    topic, question_names = topic_list
 
     completed_questions = []
 
     for question_name in question_names:
+        print(f"[{topic}]: {question_name}")
         completed_questions.append(
             generate_question_answers(agent, question_name)
         )
 
-    if config.get("generate_questions_for_topic", {"save_intermittently" : False}).get("save_intermittently""):
+    if config.get("generate_questions_for_topic", {"save_intermittently" : False}).get("save_intermittently"):
         with open(f"./data/{str(time()).replace('.', '_')}.json", "w") as f:
             json.dump([topic, completed_questions], f)
 
@@ -102,6 +103,36 @@ def generate_question_answers(agent, question: str) -> list:
     except Exception as e:
         print(f"{e}\nThere was an error in the response for question {question}, trying again.")
         return generate_question_answers(agent, question)
+
+async def async_generate_questions_for_topic(agent, topic_list:list):
+    topic, question_names = topic_list
+
+    completed_questions = []
+
+    for question_name in question_names:
+        print(f"[{topic}]: {question_name}")
+        completed_questions.append(
+            await async_generate_question_answers(agent, question_name)
+        )
+
+    if config.get("generate_questions_for_topic", {"save_intermittently" : False}).get("save_intermittently"):
+        with open(f"./data/{str(time()).replace('.', '_')}.json", "w") as f:
+            json.dump([topic, completed_questions], f)
+
+    return [topic, completed_questions]
+
+async def async_generate_question_answers(agent, question: str) -> list:
+    try:
+        response = await agent.ainvoke({"messages" : [
+            {"role" : "user", "content" : f"write the answers for the question {question}."}
+        ]})
+
+        if "structured_response" in response.keys():
+            # return as dictionary, questionsanswers schema... (it should be json serialisable)
+            return response["structured_response"].model_dump()
+    except Exception as e:
+        print(f"{e}\nThere was an error in the response for question {question}, trying again.")
+        return await async_generate_question_answers(agent, question)
 
 def main():
     agent = init_questions_agent()
