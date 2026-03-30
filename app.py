@@ -21,14 +21,17 @@ def load_question_data():
         return json.load(f)
 
 question_data = load_question_data()
-
+"""
 # Organize questions by topic for easier access
 questions_by_topic = defaultdict(list)
 for q in question_data:
     # Each question is a dictionary, we assume it has a "topic" key
     if "topic" in q:
         questions_by_topic[q["topic"]].append(q)
-
+"""
+questions_by_topic = {
+    k:v for k,v in question_data
+}
 # Get the list of unique topics
 topics_data = sorted(questions_by_topic.keys())
 
