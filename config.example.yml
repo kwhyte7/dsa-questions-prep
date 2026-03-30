@@ -1,10 +1,10 @@
-model:
+model: # generate questions
   model: ollama:qwen3.5:9b
   temperature: 0.5 
 
-uvicorn:
+uvicorn: # run webserver
   port: 8090
   host: "0.0.0.0"
 
-generate_questions_for_topic:
+generate_questions_for_topic: # make backups when writing the questions
   save_intermittently: true
