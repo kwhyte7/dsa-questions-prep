@@ -10,4 +10,6 @@ dependencies = [
     "pyyaml>=6.0.3",
     "dotenv>=0.9.9",
     "pydantic>=2.12.5",
+    "fastapi[standard]>=0.135.2",
+    "aiofiles>=25.1.0",
 ]
