@@ -2,7 +2,7 @@ from typing import Annotated
 from fastapi import FastAPI, Request, Form, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
-import uvicorn, yaml, json
+import uvicorn, yaml, json, copy
 import random
 from collections import defaultdict
 
@@ -49,6 +49,9 @@ def start_quiz(request: Request, topic: str = Form(...), num_questions: int = Fo
         selected_questions = random.sample(topic_questions, num_questions)
     else:
         selected_questions = topic_questions
+    
+    # Deep copy to avoid modifying the original data
+    selected_questions = copy.deepcopy(selected_questions)
     
     # Shuffle answer order for each question
     for q in selected_questions:
@@ -125,7 +128,13 @@ def submit_answer(request: Request, session_id: str, answer_index: int = Form(..
         return RedirectResponse(f"/results/{session_id}", status_code=303)
     
     question = session["questions"][current_q]
-    is_correct = (answer_index == question.get("correct_index", -1))
+    
+    # Validate answer_index is within bounds
+    if not (0 <= answer_index < len(question.get("shuffled_answers", []))):
+        # If out of bounds, treat as incorrect and don't crash
+        is_correct = False
+    else:
+        is_correct = (answer_index == question.get("correct_index", -1))
     
     # Update score
     if is_correct:
@@ -166,16 +175,32 @@ def show_results(request: Request, session_id: str):
         user_answer = None
         if i < len(session["user_answers"]):
             user_ans = session["user_answers"][i]
+            # Safely get the user's answer text
+            answer_index = user_ans["answer_index"]
+            shuffled_answers = q.get("shuffled_answers", [])
+            if 0 <= answer_index < len(shuffled_answers):
+                answer_text = shuffled_answers[answer_index]
+            else:
+                answer_text = "Invalid answer index"
+            
             user_answer = {
-                "index": user_ans["answer_index"],
-                "text": q["shuffled_answers"][user_ans["answer_index"]],
+                "index": answer_index,
+                "text": answer_text,
                 "is_correct": user_ans["is_correct"]
             }
+        
+        # Safely get the correct answer text
+        correct_index = q.get("correct_index", 0)
+        shuffled_answers = q.get("shuffled_answers", [])
+        if 0 <= correct_index < len(shuffled_answers):
+            correct_answer_text = shuffled_answers[correct_index]
+        else:
+            correct_answer_text = "Invalid correct index"
         
         detailed_results.append({
             "question": q["question_name"],
             "description": q["question_description"],
-            "correct_answer": q["shuffled_answers"][q["correct_index"]],
+            "correct_answer": correct_answer_text,
             "user_answer": user_answer,
             "hint": q.get("question_hint", "")
         })
