@@ -1,0 +1,13 @@
+[project]
+name = "master"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "langchain[deepseek,ollama]>=1.2.13",
+    "langchain-deepseek>=1.0.1",
+    "pyyaml>=6.0.3",
+    "dotenv>=0.9.9",
+    "pydantic>=2.12.5",
+]

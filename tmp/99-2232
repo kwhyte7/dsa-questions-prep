@@ -1,0 +1,47 @@
+def generate_structured_response(model, question: str) -> dict:
+    """
+    Generate a structured response using LangChain's structured output capabilities.
+    
+    Args:
+        model: LangChain chat model instance
+        question: The question to generate a structured response for
+        
+    Returns:
+        A dictionary with structured response fields
+    """
+    from langchain_core.prompts import ChatPromptTemplate
+    from langchain_core.output_parsers import JsonOutputParser
+    from langchain_core.pydantic_v1 import BaseModel, Field
+    
+    # Define the structured response schema
+    class StructuredResponse(BaseModel):
+        answer: str = Field(description="The main answer to the question")
+        explanation: str = Field(description="Detailed explanation of the answer")
+        confidence: float = Field(description="Confidence score from 0.0 to 1.0")
+        key_points: list[str] = Field(description="List of key points or takeaways")
+        follow_up_questions: list[str] = Field(description="Suggested follow-up questions")
+    
+    # Create the prompt template
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "You are an expert interviewer providing structured responses to interview questions."),
+        ("human", "Generate a structured response for this question: {question}")
+    ])
+    
+    # Create the output parser
+    parser = JsonOutputParser(pydantic_object=StructuredResponse)
+    
+    # Create the chain
+    chain = prompt | model | parser
+    
+    # Generate the structured response
+    try:
+        response = chain.invoke({"question": question})
+        return response
+    except Exception as e:
+        return {
+            "answer": f"Error generating response: {str(e)}",
+            "explanation": "",
+            "confidence": 0.0,
+            "key_points": [],
+            "follow_up_questions": []
+        }

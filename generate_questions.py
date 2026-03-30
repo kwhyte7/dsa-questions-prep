@@ -1,0 +1,77 @@
+# we'll use AI to generate the answers - probably going to use deepseek.
+import json, os, yaml
+from langchain.chat_models import init_chat_model
+from langchain.agents import create_agent
+from dotenv import load_dotenv
+from time import time
+
+from schemas import QuestionAnswers
+
+load_dotenv()
+
+# load topics
+def load_topics():
+    with open("./data/topics.json") as f:
+        topics = json.load(f)
+
+    return topics
+
+# [[topic, [*questions]]]
+def load_config():
+    with open("./config.yml") as f:
+        return yaml.safe_load(f)
+
+config = load_config()
+
+def init_questions_agent():
+    model = init_chat_model(
+        **config.get("model")
+    )
+
+    agent = create_agent(
+        model=model,
+        system_prompt="You are a DSA question writer. You write the questions and answers for students learning DSA",
+        response_format=QuestionAnswers,
+    )
+
+    return agent
+
+def load_topics():
+    with open("./data/topics.json", "r") as f:
+        return json.load(f)
+
+def generate_all_topics(agent, topics:list):
+    for topic in topics: 
+
+def generate_questions_for_topic(agent, topic_list:list):
+    topic, question_names = topic
+
+    completed_questions = []
+
+    for question_name in question_names:
+        completed_questions.append(
+            generate_question_answers(agent, question_name)
+        )
+
+    if config.get("generate_questions_for_topic", {"save_intermittently" : False}).get("save_intermittently""):
+        with open(f"./data/{str(time()).replace('.', '_')}.json", "w") as f:
+            json.dump([topic, completed_questions], f)
+
+    return [topic, completed_questions]
+
+def generate_question_answers(agent, question: str) -> list:
+    try:
+        response = agent.invoke({"messages" : [
+            {"role" : "user", "content" : f"write the answers for the question {question}."}
+        ]})
+
+        if "structured_response" in response.keys():
+            # return as dictionary, questionsanswers schema... (it should be json serialisable)
+            return response["structured_response"].model_dump()
+    except Exception as e:
+        print(f"{e}\nThere was an error in the response for question {question}, trying again.")
+        return generate_question_answers(agent, question)
+
+if __name__ == "__main__":
+    agent = init_questions_agent(load_config())
+    print(generate_question_answers(agent, "How do you create a linked list?"))

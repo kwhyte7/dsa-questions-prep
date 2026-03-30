@@ -1,0 +1,80 @@
+<Context>
+You receive a selection in neovim that you need to replace with new code.
+The selection's contents may contain notes, incorporate the notes every time if there are some.
+consider the context of the selection and what you are suppose to be implementing
+<SELECTION_LOCATION>
+range(point(42,1),point(44,50))
+</SELECTION_LOCATION>
+<SELECTION_CONTENT>
+    if "structured_response" in response.keys():
+        # return as dictionary, QuestionsAnswers schema... (it should be json serialisable)
+        as_json = response["structured_response"]
+</SELECTION_CONTENT>
+<FILE_CONTAINING_SELECTION>
+# we'll use AI to generate the answers - probably going to use deepseek.
+import json, os
+from langchain.models import init_chat_model
+from langchain.agents import create_agent
+from dotenv import load_dotenv
+
+from schemas import QuestionAnswers
+
+load_dotenv()
+
+# load topics
+def load_topics():
+    with open("./data/topics.json") as f:
+        topics = json.load(f)
+
+    return topics
+
+# [[topic, [*questions]]]
+def load_config():
+    with open("./config.yml") as f:
+        return yaml.safe_load(f)
+
+def init_questions_agent(config):
+    model = init_chat_model(
+        **config.get("model")
+    )
+
+    agent = create_agent(
+        model=model,
+        system_prompt="You are a DSA question writer. You write the questions and answers for students learning DSA",
+        response_format=QuestionAnswers,
+    )
+
+    return agent
+
+def generate_question_answers(agent, question:str) -> list:
+    # something
+    response = agent.invoke({"messages" : [
+        {"role" : "user", "content" : f"Write the answers for the question {question}."}
+    ]})
+
+    if "structured_response" in response.keys():
+        # return as dictionary, QuestionsAnswers schema... (it should be json serialisable)
+        as_json = response["structured_response"]
+</FILE_CONTAINING_SELECTION>
+
+</Context>
+<Prompt>
+follow commented instruction 
+</Prompt>
+
+<Location><File>/storage/vibe_projects/interview-prep-quiz/master/generate_questions.py</File><Function>range(point(42,1),point(44,50))</Function></Location>
+<FunctionText>    if "structured_response" in response.keys():
+        # return as dictionary, QuestionsAnswers schema... (it should be json serialisable)
+        as_json = response["structured_response"]</FunctionText>
+<TEMP_FILE>./tmp/99-1770</TEMP_FILE>
+<MustObey>
+NEVER alter any file other than TEMP_FILE.
+never provide the requested changes as conversational output. Return only the code.
+ONLY provide requested changes by writing the change to TEMP_FILE
+
+never attempt to read TEMP_FILE.
+It is purely for output.
+Previous contents, which may not exist, can be written over without worry
+After writing TEMP_FILE once you should be done.  Be done and end the session.
+
+</MustObey>
