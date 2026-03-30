@@ -1,1 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #0f3460;
+            --text-primary: #e6e6e6;
+            --text-secondary: #b3b3b3;
+            --accent: #4cc9f0;
+            --accent-hover: #3aa8d8;
+            --correct: #4CAF50;
+            --incorrect: #f44336;
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background-color: var(--bg-secondary) !important;
+            border-bottom: 2px solid var(--accent);
+        }
+        
+        .navbar-brand {
+            color: var(--accent) !important;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        
+        .nav-link {
+            color: var(--text-primary) !important;
+        }
+        
+        .nav-link:hover {
+            color: var(--accent) !important;
+        }
+        
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid rgba(76, 201, 240, 0.3);
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(76, 201, 240, 0.3);
+            color: var(--accent);
+        }
+        
+        .btn-primary {
+            background-color: var(--accent);
+            border-color: var(--accent);
+            color: var(--bg-primary);
+            font-weight: bold;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+        
+        .btn-outline-primary {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--accent);
+            border-color: var(--accent);
+            color: var(--bg-primary);
+        }
+        
+        .form-control, .form-select {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(76, 201, 240, 0.3);
+            color: var(--text-primary);
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: var(--accent);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 0.25rem rgba(76, 201, 240, 0.25);
+        }
+        
+        .score-display {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
+            border: 2px solid var(--accent);
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .correct-answer {
+            background-color: rgba(76, 175, 80, 0.2) !important;
+            border-left: 4px solid var(--correct) !important;
+        }
+        
+        .incorrect-answer {
+            background-color: rgba(244, 67, 54, 0.2) !important;
+            border-left: 4px solid var(--incorrect) !important;
+        }
+        
+        .answer-option {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        
+        .answer-option:hover {
+            background-color: rgba(76, 201, 240, 0.1);
+            border-color: var(--accent);
+        }
+        
+        .progress {
+            background-color: rgba(255, 255, 255, 0.1);
+            height: 10px;
+        }
+        
+        .progress-bar {
+            background-color: var(--accent);
+        }
+        
+        .topic-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .topic-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        footer {
+            background-color: var(--bg-secondary);
+            border-top: 1px solid rgba(76, 201, 240, 0.3);
+            margin-top: 3rem;
+            padding: 1.5rem 0;
+        }
+        
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        /* Light theme styles */
+        body.light-theme {
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #e9ecef;
+            --bg-card: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --accent: #0d6efd;
+            --accent-hover: #0b5ed7;
+        }
+        
+        body.light-theme .navbar {
+            background-color: var(--bg-secondary) !important;
+        }
+        
+        body.light-theme .card {
+            background-color: var(--bg-card);
+            border: 1px solid rgba(13, 110, 253, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">🧠 CodeQuiz</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/new_quiz">New Quiz</a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link btn btn-link" onclick="toggleTheme()">Toggle Theme</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
+    <main class="container py-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="container text-center">
+            <p class="mb-0">© 2024 CodeQuiz. Test your programming knowledge!</p>
+            <p class="text-muted mt-2">Total questions answered: {{ scores.values()|sum(attribute='total_answered')|default(0) }}</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Theme toggle functionality
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            const currentTheme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
+            localStorage.setItem('theme', currentTheme);
+        }
+        
+        // Load saved theme
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-theme');
+            }
+        });
+        
+        // Auto-select answer on click for question page
+        document.addEventListener('DOMContentLoaded', () => {
+            const answerOptions = document.querySelectorAll('.answer-option');
+            answerOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const radio = this.querySelector('input[type="radio"]');
+                    if (radio) {
+                        radio.checked = true;
+                        answerOptions.forEach(opt => opt.classList.remove('selected'));
+                        this.classList.add('selected');
+                    }
+                });
+            });
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

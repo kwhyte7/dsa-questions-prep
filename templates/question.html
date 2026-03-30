@@ -1,1 +1,128 @@
+{% extends "layout.html" %}
 
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <!-- Progress Bar -->
+        <div class="mb-4">
+            <div class="d-flex justify-content-between mb-2">
+                <span>Question {{ current_q }} of {{ total_questions }}</span>
+                <span>{{ ((current_q / total_questions) * 100)|round }}% Complete</span>
+            </div>
+            <div class="progress" style="height: 10px;">
+                <div class="progress-bar" style="width: {{ (current_q / total_questions * 100) }}%"></div>
+            </div>
+        </div>
+        
+        <!-- Score Display -->
+        <div class="score-display mb-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Current Score: {{ score }}</h5>
+                </div>
+                <div class="col-md-6 text-end">
+                    <h5>Accuracy: 
+                        {% if current_q > 1 %}
+                            {{ ((score / (current_q - 1)) * 100)|round }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </h5>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Question Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title mb-0">{{ question.question_name }}</h3>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <p class="lead">{{ question.question_description }}</p>
+                </div>
+                
+                <form action="/answer/{{ session_id }}" method="post">
+                    <div class="mb-4">
+                        <h5 class="mb-3">Select your answer:</h5>
+                        <div class="list-group">
+                            {% for answer in question.shuffled_answers %}
+                            <label class="list-group-item answer-option {% if loop.index0 == question.correct_index %}correct-answer{% endif %}">
+                                <div class="d-flex align-items-center">
+                                    <input class="form-check-input me-3" type="radio" 
+                                           name="answer_index" 
+                                           value="{{ loop.index0 }}" 
+                                           id="answer{{ loop.index0 }}"
+                                           required>
+                                    <div>
+                                        <span class="fw-bold">{{ ['A', 'B', 'C', 'D', 'E', 'F'][loop.index0] }}.</span>
+                                        <span class="ms-2">{{ answer }}</span>
+                                    </div>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Hint (initially hidden) -->
+                    {% if question.question_hint %}
+                    <div class="mb-4">
+                        <button type="button" class="btn btn-outline-primary btn-sm" 
+                                onclick="document.getElementById('hint').classList.toggle('d-none')">
+                            Show Hint 💡
+                        </button>
+                        <div id="hint" class="mt-2 p-3 bg-dark rounded d-none">
+                            <small class="text-muted">{{ question.question_hint }}</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            Submit Answer & Continue →
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="text-center">
+            <a href="/new_quiz" class="btn btn-outline-secondary">Cancel Quiz</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Highlight selected answer
+        const answerOptions = document.querySelectorAll('.answer-option');
+        answerOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Uncheck all other radios
+                answerOptions.forEach(opt => {
+                    opt.classList.remove('selected');
+                    opt.querySelector('input[type="radio"]').checked = false;
+                });
+                
+                // Check this one and add selected class
+                const radio = this.querySelector('input[type="radio"]');
+                radio.checked = true;
+                this.classList.add('selected');
+            });
+        });
+        
+        // Prevent form submission without selection
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            const selected = form.querySelector('input[name="answer_index"]:checked');
+            if (!selected) {
+                e.preventDefault();
+                alert('Please select an answer before submitting.');
+            }
+        });
+    });
+</script>
+{% endblock %}
