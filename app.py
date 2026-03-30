@@ -20,26 +20,24 @@ def load_question_data():
     with open("./data/full_questions.json") as f:
         return json.load(f)
 
-def load_topics():
-    with open("./data/topics.json") as f:
-        return json.load(f)
-
 question_data = load_question_data()
-topics_data = load_topics()
 
 # Organize questions by topic for easier access
 questions_by_topic = defaultdict(list)
 for q in question_data:
-    # Assuming each question has a "topic" field
+    # Each question is a dictionary, we assume it has a "topic" key
     if "topic" in q:
         questions_by_topic[q["topic"]].append(q)
+
+# Get the list of unique topics
+topics_data = sorted(questions_by_topic.keys())
 
 @app.get("/")
 def index(request: Request):
     return templates.TemplateResponse(
         request,
         "topic_selection.html",
-        {"topics": topics_data, "scores": user_scores}
+        {"topics": topics_data, "scores": user_scores, "questions_by_topic": questions_by_topic}
     )
 
 @app.post("/start_quiz")
